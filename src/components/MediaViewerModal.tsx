@@ -1,17 +1,19 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { X, Download, Copy, Check, ExternalLink, Film, Image as ImageIcon, Calendar, HardDrive } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Download, Copy, Check, ExternalLink, Film, Image as ImageIcon, Calendar, HardDrive, Trash2, Loader2 } from 'lucide-react';
 import { VaultFileItem } from '@/lib/supabase';
 import { formatBytes, formatDate } from '@/lib/utils';
 
 interface MediaViewerModalProps {
   file: VaultFileItem | null;
   onClose: () => void;
+  onDelete?: (file: VaultFileItem) => Promise<void> | void;
 }
 
-export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({ file, onClose }) => {
-  const [copied, setCopied] = React.useState(false);
+export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({ file, onClose, onDelete }) => {
+  const [copied, setCopied] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -44,6 +46,23 @@ export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({ file, onClos
     } catch (err) {
       // Fallback direct link
       window.open(file.url, '_blank');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!file || !onDelete) return;
+    const confirmDelete = window.confirm(`Bạn có chắc muốn xoá vĩnh viễn tệp "${file.originalName}" khỏi máy chủ?`);
+    if (!confirmDelete) return;
+
+    try {
+      setDeleting(true);
+      await onDelete(file);
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Lỗi khi xoá tệp khỏi máy chủ');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -83,6 +102,18 @@ export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({ file, onClos
               <Download className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Tải về</span>
             </button>
+
+            {onDelete && (
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="neo-btn bg-neo-pink hover:bg-red-500 text-white px-3 py-1.5 text-xs font-bold flex items-center gap-1 shadow-neo-sm transition-colors"
+                title="Xoá vĩnh viễn khỏi máy chủ"
+              >
+                {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline">{deleting ? 'Đang xoá...' : 'Xoá'}</span>
+              </button>
+            )}
 
             <button
               onClick={onClose}

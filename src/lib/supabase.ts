@@ -17,13 +17,6 @@ export interface VaultFileItem {
   isImage: boolean;
 }
 
-export interface VaultInfo {
-  key: string;
-  createdAt?: string;
-  fileCount: number;
-  totalSize: number;
-}
-
 let cachedClient: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient | null {
@@ -61,99 +54,6 @@ export function isSupabaseConfigured(): boolean {
 
 export function getBucketName(): string {
   return process.env.NEXT_PUBLIC_SUPABASE_BUCKET || DEFAULT_BUCKET;
-}
-
-/**
- * Check if a key vault exists or has content (ignoring expired files)
- */
-export async function checkVaultExists(vaultKey: string): Promise<{ exists: boolean; fileCount: number }> {
-  const supabase = getSupabase();
-  if (!supabase) {
-    throw new Error('Chưa thiết lập biến môi trường Supabase trong hệ thống.');
-  }
-
-  const bucket = getBucketName();
-  const cleanKey = vaultKey.trim();
-
-  const { data, error } = await supabase.storage.from(bucket).list(cleanKey, {
-    limit: 100,
-  });
-
-  if (error) {
-    console.warn('Storage list error:', error);
-    throw new Error(error.message || 'Không thể kết nối tới máy chủ lưu trữ');
-  }
-
-  if (!data || data.length === 0) {
-    return { exists: false, fileCount: 0 };
-  }
-
-  const now = Date.now();
-  const validFiles = data.filter((f) => {
-    if (f.name === '.emptyFolderPlaceholder') return false;
-    if (f.name === '.vault') return true;
-    
-    // Check 30m expiration
-    const match = f.name.match(/^(\d+)_(.+)$/);
-    const timestamp = match ? parseInt(match[1]) : new Date(f.created_at || now).getTime();
-    return (now - timestamp) <= FILE_TTL_MS;
-  });
-
-  return {
-    exists: validFiles.length > 0,
-    fileCount: validFiles.filter((f) => f.name !== '.vault').length,
-  };
-}
-
-/**
- * Generate a unique 4-digit key guaranteed not to exist yet in Supabase
- */
-export async function generateUniqueRandomKey(): Promise<string> {
-  const MAX_ATTEMPTS = 15;
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    const candidate = String(Math.floor(1000 + Math.random() * 9000));
-    try {
-      const res = await checkVaultExists(candidate);
-      if (!res.exists) {
-        return candidate;
-      }
-    } catch {
-      return candidate;
-    }
-  }
-  return String(Math.floor(1000 + Math.random() * 9000));
-}
-
-/**
- * Create a new key vault (creates a sentinel marker file)
- */
-export async function createVault(vaultKey: string): Promise<boolean> {
-  const supabase = getSupabase();
-  if (!supabase) {
-    throw new Error('Chưa thiết lập biến môi trường Supabase.');
-  }
-
-  const bucket = getBucketName();
-  const cleanKey = vaultKey.trim();
-  const metadata = JSON.stringify({
-    key: cleanKey,
-    createdAt: new Date().toISOString(),
-  });
-
-  const blob = new Blob([metadata], { type: 'application/json' });
-  const { error } = await supabase.storage
-    .from(bucket)
-    .upload(`${cleanKey}/.vault`, blob, {
-      upsert: true,
-      contentType: 'application/json',
-    });
-
-  if (error) {
-    console.error('Error creating vault sentinel:', error);
-    throw new Error(error.message || 'Lỗi khi khởi tạo thư mục khoá');
-  }
-
-  return true;
 }
 
 /**
@@ -296,7 +196,7 @@ export async function uploadVaultFile(
 }
 
 /**
- * Delete a media file from vault
+ * Delete a media file from vault and Supabase Storage
  */
 export async function deleteVaultFile(vaultKey: string, fileName: string): Promise<boolean> {
   const supabase = getSupabase();
@@ -311,8 +211,35 @@ export async function deleteVaultFile(vaultKey: string, fileName: string): Promi
   const { error } = await supabase.storage.from(bucket).remove([filePath]);
 
   if (error) {
-    throw new Error(error.message || 'Lỗi khi xoá tệp');
+    console.error('Lỗi khi xoá tệp từ Supabase Storage:', error);
+    throw new Error(error.message || 'Lỗi khi xoá tệp khỏi máy chủ');
   }
 
   return true;
 }
+
+/**
+ * Delete multiple media files from vault and Supabase Storage
+ */
+export async function deleteVaultFiles(vaultKey: string, fileNames: string[]): Promise<boolean> {
+  if (!fileNames || fileNames.length === 0) return true;
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    throw new Error('Chưa kết nối máy chủ lưu trữ.');
+  }
+
+  const bucket = getBucketName();
+  const cleanKey = vaultKey.trim();
+  const filePaths = fileNames.map((fileName) => `${cleanKey}/${fileName}`);
+
+  const { error } = await supabase.storage.from(bucket).remove(filePaths);
+
+  if (error) {
+    console.error('Lỗi khi xoá nhiều tệp từ Supabase Storage:', error);
+    throw new Error(error.message || 'Lỗi khi xoá các tệp khỏi máy chủ');
+  }
+
+  return true;
+}
+

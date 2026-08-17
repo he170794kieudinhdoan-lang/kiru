@@ -8,7 +8,7 @@ import {
   Share2, 
   RefreshCw 
 } from 'lucide-react';
-import { listVaultFiles, VaultFileItem } from '@/lib/supabase';
+import { listVaultFiles, deleteVaultFile, deleteVaultFiles, VaultFileItem } from '@/lib/supabase';
 import { UploadZone } from './UploadZone';
 import { MediaGallery } from './MediaGallery';
 import { MediaViewerModal } from './MediaViewerModal';
@@ -46,6 +46,31 @@ export const KeyVaultView: React.FC<KeyVaultViewProps> = ({
     fetchFiles();
   }, [fetchFiles]);
 
+  // Real-time auto-purge: Automatically remove & delete files from Supabase Storage the second they expire (> 30 min)
+  useEffect(() => {
+    if (files.length === 0) return;
+
+    const timer = setInterval(() => {
+      const now = Date.now();
+      const expired = files.filter((f) => f.expiresAt <= now);
+
+      if (expired.length > 0) {
+        const expiredNames = expired.map((f) => f.name);
+        // Immediately remove expired files from UI
+        setFiles((prev) => prev.filter((f) => f.expiresAt > now));
+        if (selectedFile && expired.some((f) => f.id === selectedFile.id || f.name === selectedFile.name)) {
+          setSelectedFile(null);
+        }
+        // Purge expired files from Supabase Storage
+        deleteVaultFiles(vaultKey, expiredNames).catch((err) => {
+          console.error('Lỗi khi tự động xoá file hết hạn từ Supabase:', err);
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [files, vaultKey, selectedFile]);
+
   const handleCopyShareLink = () => {
     const url = `${window.location.origin}/?key=${encodeURIComponent(vaultKey)}`;
     navigator.clipboard.writeText(url);
@@ -55,6 +80,40 @@ export const KeyVaultView: React.FC<KeyVaultViewProps> = ({
 
   const handleUploadSuccess = (newUploaded: VaultFileItem[]) => {
     setFiles((prev) => [...newUploaded, ...prev]);
+  };
+
+  const handleDeleteFile = async (file: VaultFileItem) => {
+    try {
+      setError('');
+      await deleteVaultFile(vaultKey, file.name);
+      setFiles((prev) => prev.filter((f) => f.id !== file.id && f.name !== file.name));
+      if (selectedFile?.id === file.id || selectedFile?.name === file.name) {
+        setSelectedFile(null);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Lỗi khi xoá tệp từ máy chủ');
+      throw err;
+    }
+  };
+
+  const handleDeleteAllFiles = async () => {
+    if (files.length === 0) return;
+    const confirmDelete = window.confirm(`Bạn có chắc muốn xoá vĩnh viễn tất cả ${files.length} tệp trong khoá này khỏi máy chủ?`);
+    if (!confirmDelete) return;
+
+    try {
+      setLoading(true);
+      setError('');
+      await deleteVaultFiles(vaultKey, files.map((f) => f.name));
+      setFiles([]);
+      setSelectedFile(null);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Lỗi khi xoá toàn bộ tệp từ máy chủ');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -117,13 +176,17 @@ export const KeyVaultView: React.FC<KeyVaultViewProps> = ({
         files={files}
         loading={loading}
         onSelectFile={(f) => setSelectedFile(f)}
+        onDeleteFile={handleDeleteFile}
+        onDeleteAll={handleDeleteAllFiles}
       />
 
       {/* Media Lightbox */}
       <MediaViewerModal
         file={selectedFile}
         onClose={() => setSelectedFile(null)}
+        onDelete={handleDeleteFile}
       />
     </div>
   );
 };
+

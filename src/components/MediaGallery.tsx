@@ -6,7 +6,9 @@ import {
   Eye, 
   FileQuestion, 
   Play, 
-  Clock 
+  Clock,
+  Trash2,
+  Loader2
 } from 'lucide-react';
 import { VaultFileItem } from '@/lib/supabase';
 import { formatBytes, formatRemainingTime } from '@/lib/utils';
@@ -16,6 +18,8 @@ interface MediaGalleryProps {
   files: VaultFileItem[];
   loading: boolean;
   onSelectFile: (file: VaultFileItem) => void;
+  onDeleteFile: (file: VaultFileItem) => Promise<void> | void;
+  onDeleteAll?: () => Promise<void> | void;
 }
 
 // Isolated countdown badge: Only updates itself every second without re-rendering parent/media grid!
@@ -42,11 +46,30 @@ const MediaCard = memo(({
   file,
   onSelect,
   onDownload,
+  onDelete,
 }: {
   file: VaultFileItem;
   onSelect: (file: VaultFileItem) => void;
   onDownload: (file: VaultFileItem, e: React.MouseEvent) => void;
+  onDelete: (file: VaultFileItem, e: React.MouseEvent) => Promise<void> | void;
 }) => {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const confirmed = window.confirm(`Bạn có chắc muốn xoá vĩnh viễn tệp "${file.originalName}" khỏi máy chủ?`);
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      await onDelete(file, e);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div
       onClick={() => onSelect(file)}
@@ -100,15 +123,25 @@ const MediaCard = memo(({
           </p>
         </div>
 
-        {/* Download Button */}
-        <div className="mt-2 pt-1.5 border-t border-black/10">
+        {/* Action Buttons: Tải Về & Xoá */}
+        <div className="mt-2 pt-1.5 border-t border-black/10 grid grid-cols-2 gap-1.5">
           <button
             onClick={(e) => onDownload(file, e)}
-            className="w-full neo-btn bg-neo-lime hover:bg-green-400 text-black py-1.5 px-2 text-xs font-black flex items-center justify-center gap-1.5 shadow-neo-sm"
+            className="neo-btn bg-neo-lime hover:bg-green-400 text-black py-1.5 px-1 text-[11px] font-black flex items-center justify-center gap-1 shadow-neo-sm"
             title="Tải về máy"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3 h-3" />
             <span>Tải Về</span>
+          </button>
+
+          <button
+            onClick={handleDeleteClick}
+            disabled={deleting}
+            className="neo-btn bg-neo-pink hover:bg-red-500 text-white py-1.5 px-1 text-[11px] font-black flex items-center justify-center gap-1 shadow-neo-sm transition-colors"
+            title="Xoá vĩnh viễn khỏi máy chủ"
+          >
+            {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+            <span>{deleting ? '...' : 'Xoá'}</span>
           </button>
         </div>
       </div>
@@ -121,6 +154,8 @@ export const MediaGallery: React.FC<MediaGalleryProps> = memo(({
   files,
   loading,
   onSelectFile,
+  onDeleteFile,
+  onDeleteAll,
 }) => {
   const handleDownload = useCallback(async (file: VaultFileItem, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -142,11 +177,24 @@ export const MediaGallery: React.FC<MediaGalleryProps> = memo(({
 
   return (
     <div className="w-full">
-      {/* Header with 30m auto-expiry badge */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <span className="text-xs font-mono font-bold uppercase text-zinc-600">
-          Danh sách tệp ({files.length})
-        </span>
+      {/* Header with 30m auto-expiry badge & Delete all */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono font-bold uppercase text-zinc-600">
+            Danh sách tệp ({files.length})
+          </span>
+
+          {files.length > 0 && onDeleteAll && (
+            <button
+              onClick={onDeleteAll}
+              className="text-[11px] font-bold text-red-600 hover:text-red-800 hover:underline flex items-center gap-1 cursor-pointer"
+              title="Xoá tất cả tệp trong khoá khỏi máy chủ"
+            >
+              <Trash2 className="w-3 h-3" />
+              <span>Xoá tất cả</span>
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-500 bg-zinc-100 px-2 py-0.5 border border-black/20">
           <Clock className="w-3 h-3 text-zinc-600" />
@@ -177,6 +225,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = memo(({
             file={file}
             onSelect={onSelectFile}
             onDownload={handleDownload}
+            onDelete={onDeleteFile}
           />
         ))}
       </div>
@@ -184,3 +233,4 @@ export const MediaGallery: React.FC<MediaGalleryProps> = memo(({
   );
 });
 MediaGallery.displayName = 'MediaGallery';
+

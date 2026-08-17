@@ -5,14 +5,14 @@ import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { KeyEntryHero } from '@/components/KeyEntryHero';
 import { KeyVaultView } from '@/components/KeyVaultView';
-import { CreateKeyModal } from '@/components/CreateKeyModal';
+import { SweetheartGallery } from '@/components/SweetheartGallery';
 import { sanitizeKey } from '@/lib/utils';
 
 function VaultApp() {
   const searchParams = useSearchParams();
 
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [currentView, setCurrentView] = useState<'vault' | 'sweetheart'>('vault');
 
   useEffect(() => {
     const urlKey = searchParams.get('key');
@@ -22,13 +22,20 @@ function VaultApp() {
         setActiveKey(sanitized);
       }
     }
+
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'gallery' || viewParam === 'sweetheart') {
+      setCurrentView('sweetheart');
+    }
   }, [searchParams]);
 
   const handleSelectKey = (key: string) => {
     const clean = sanitizeKey(key);
     setActiveKey(clean);
+    setCurrentView('vault');
     const url = new URL(window.location.href);
     url.searchParams.set('key', clean);
+    url.searchParams.delete('view');
     window.history.pushState({}, '', url.toString());
   };
 
@@ -39,18 +46,32 @@ function VaultApp() {
     window.history.pushState({}, '', url.toString());
   };
 
+  const handleToggleView = (view: 'vault' | 'sweetheart') => {
+    setCurrentView(view);
+    const url = new URL(window.location.href);
+    if (view === 'sweetheart') {
+      url.searchParams.set('view', 'gallery');
+    } else {
+      url.searchParams.delete('view');
+    }
+    window.history.pushState({}, '', url.toString());
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-between">
       {/* Navbar */}
       <Navbar
         currentKey={activeKey || undefined}
-        onOpenCreateKey={() => setShowCreateModal(true)}
         onExitKey={handleExitKey}
+        currentView={currentView}
+        onToggleView={handleToggleView}
       />
 
       {/* Main Workspace */}
       <main className="flex-1 flex flex-col">
-        {activeKey ? (
+        {currentView === 'sweetheart' ? (
+          <SweetheartGallery onBackToVault={() => handleToggleView('vault')} />
+        ) : activeKey ? (
           <KeyVaultView
             vaultKey={activeKey}
             onExit={handleExitKey}
@@ -58,17 +79,9 @@ function VaultApp() {
         ) : (
           <KeyEntryHero
             onSelectKey={handleSelectKey}
-            onOpenCreateKey={() => setShowCreateModal(true)}
           />
         )}
       </main>
-
-      {/* Modals */}
-      <CreateKeyModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onKeyCreated={handleSelectKey}
-      />
     </div>
   );
 }

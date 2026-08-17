@@ -1,24 +1,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, PlusCircle, FolderOpen, History, Trash2, AlertCircle, Dices, Loader2 } from 'lucide-react';
-import { checkVaultExists, generateUniqueRandomKey } from '@/lib/supabase';
-import { sanitizeKey, isValidKey, generateRandomKey } from '@/lib/utils';
+import { ArrowRight, FolderOpen, History, Trash2, AlertCircle } from 'lucide-react';
+import { sanitizeKey, isValidKey } from '@/lib/utils';
 
 interface KeyEntryHeroProps {
   onSelectKey: (key: string) => void;
-  onOpenCreateKey: () => void;
 }
 
 const LS_RECENT_KEYS = 'supavault_recent_keys';
 
 export const KeyEntryHero: React.FC<KeyEntryHeroProps> = ({
   onSelectKey,
-  onOpenCreateKey,
 }) => {
   const [inputKey, setInputKey] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [recentKeys, setRecentKeys] = useState<string[]>([]);
   const [showGuide, setShowGuide] = useState(false);
@@ -51,20 +46,7 @@ export const KeyEntryHero: React.FC<KeyEntryHeroProps> = ({
     localStorage.setItem(LS_RECENT_KEYS, JSON.stringify(updated));
   };
 
-  const handleRandomize = async () => {
-    setGenerating(true);
-    setError('');
-    try {
-      const unique = await generateUniqueRandomKey();
-      setInputKey(unique);
-    } catch {
-      setInputKey(generateRandomKey());
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleAccessKey = async (e?: React.FormEvent, directKey?: string) => {
+  const handleAccessKey = (e?: React.FormEvent, directKey?: string) => {
     if (e) e.preventDefault();
     setError('');
 
@@ -74,17 +56,8 @@ export const KeyEntryHero: React.FC<KeyEntryHeroProps> = ({
       return;
     }
 
-    try {
-      setLoading(true);
-      await checkVaultExists(targetKey);
-      saveRecentKey(targetKey);
-      onSelectKey(targetKey);
-    } catch (err: any) {
-      saveRecentKey(targetKey);
-      onSelectKey(targetKey);
-    } finally {
-      setLoading(false);
-    }
+    saveRecentKey(targetKey);
+    onSelectKey(targetKey);
   };
 
   return (
@@ -120,7 +93,7 @@ export const KeyEntryHero: React.FC<KeyEntryHeroProps> = ({
               <div className="space-y-2.5 text-xs font-medium text-black">
                 <div className="flex items-start gap-2">
                   <span className="font-mono font-black text-[11px] bg-black text-white px-1.5 py-0.5 shrink-0">B1</span>
-                  <span>Nhập <strong>mã 4 số</strong> hoặc bấm <strong>Random</strong> để mở thư mục.</span>
+                  <span>Nhập <strong>mã 4 số</strong> để mở thư mục lưu trữ.</span>
                 </div>
 
                 <div className="flex items-start gap-2">
@@ -143,7 +116,7 @@ export const KeyEntryHero: React.FC<KeyEntryHeroProps> = ({
 
         {/* Form */}
         <form onSubmit={(e) => handleAccessKey(e)} className="space-y-4">
-          <div className="flex gap-2">
+          <div>
             <input
               type="text"
               inputMode="numeric"
@@ -155,19 +128,9 @@ export const KeyEntryHero: React.FC<KeyEntryHeroProps> = ({
                 setError('');
               }}
               placeholder="••••"
-              className="neo-input text-3xl font-mono tracking-[0.4em] text-center py-3 font-black placeholder:text-zinc-300 flex-1"
+              className="neo-input w-full text-3xl font-mono tracking-[0.5em] text-center py-3.5 font-black placeholder:text-zinc-300"
               autoFocus
             />
-            <button
-              type="button"
-              onClick={handleRandomize}
-              disabled={generating}
-              className="neo-btn bg-neo-yellow hover:bg-yellow-300 text-black px-3.5 text-xs font-black shrink-0 flex items-center gap-1"
-              title="Tạo ngẫu nhiên 4 số"
-            >
-              {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Dices className="w-4 h-4" />}
-              <span>Random</span>
-            </button>
           </div>
 
           {error && (
@@ -177,25 +140,15 @@ export const KeyEntryHero: React.FC<KeyEntryHeroProps> = ({
             </div>
           )}
 
-          {/* 2 Main Action Buttons */}
-          <div className="grid grid-cols-2 gap-2.5 pt-1">
+          {/* Submit Action Button */}
+          <div className="pt-1">
             <button
               type="submit"
-              disabled={loading}
-              className="neo-btn bg-neo-lime hover:bg-green-400 text-black py-3 text-sm font-black flex items-center justify-center gap-1.5"
+              className="w-full neo-btn bg-neo-lime hover:bg-green-400 text-black py-3.5 text-base font-black flex items-center justify-center gap-2"
             >
-              <FolderOpen className="w-4 h-4" />
-              <span>Mở</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              type="button"
-              onClick={onOpenCreateKey}
-              className="neo-btn bg-neo-cyan hover:bg-cyan-300 text-black py-3 text-sm font-black flex items-center justify-center gap-1.5"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Tạo Key Mới</span>
+              <FolderOpen className="w-5 h-5" />
+              <span>Mở Thư Mục</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </form>

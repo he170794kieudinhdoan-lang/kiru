@@ -38,12 +38,6 @@ export function formatRemainingTime(expiresAt: number): string {
   return `${seconds}s`;
 }
 
-/**
- * Tạo mã key ngẫu nhiên đúng 4 chữ số (1000 - 9999)
- */
-export function generateRandomKey(): string {
-  return String(Math.floor(1000 + Math.random() * 9000));
-}
 
 /**
  * Chỉ cho phép ký tự số và tối đa 4 số
