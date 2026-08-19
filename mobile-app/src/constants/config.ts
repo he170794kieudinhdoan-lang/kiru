@@ -3,3 +3,4 @@ export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 export const SUPABASE_BUCKET = 'vault-media';
 export const FILE_TTL_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
 export const WEB_SHARE_BASE_URL = 'https://kiru.app'; // Or your web deployment URL
+export const DEFAULT_VAULT_KEY = '1111';

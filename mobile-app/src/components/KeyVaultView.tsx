@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
-import { KeyRound, ArrowLeft, Share2, RefreshCw, AlertCircle } from 'lucide-react-native';
+import { AlertCircle } from 'lucide-react-native';
 import {
   listVaultFiles,
   deleteVaultFile,
@@ -18,16 +18,16 @@ import {
   VaultFileItem,
 } from '../lib/supabase';
 import { WEB_SHARE_BASE_URL } from '../constants/config';
+import { Header } from './Header';
 import { UploadSection } from './UploadSection';
 import { MediaGallery } from './MediaGallery';
 import { MediaModal } from './MediaModal';
 
 interface KeyVaultViewProps {
   vaultKey: string;
-  onExit: () => void;
 }
 
-export const KeyVaultView: React.FC<KeyVaultViewProps> = ({ vaultKey, onExit }) => {
+export const KeyVaultView: React.FC<KeyVaultViewProps> = ({ vaultKey }) => {
   const [files, setFiles] = useState<VaultFileItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -57,7 +57,7 @@ export const KeyVaultView: React.FC<KeyVaultViewProps> = ({ vaultKey, onExit }) 
     fetchFiles();
   };
 
-  // Real-time auto purge: Automatically remove & delete files from Supabase Storage the second they expire (> 30 min)
+  // Real-time auto purge: remove & delete files from Supabase Storage the second they expire (> 30 min)
   useEffect(() => {
     if (files.length === 0) return;
 
@@ -84,15 +84,13 @@ export const KeyVaultView: React.FC<KeyVaultViewProps> = ({ vaultKey, onExit }) 
   }, [files, vaultKey, selectedFile]);
 
   const handleShareKey = async () => {
-    const shareText = `Mở Kiru Vault với mã key #${vaultKey} hoặc truy cập: ${WEB_SHARE_BASE_URL}/?key=${encodeURIComponent(
-      vaultKey
-    )}`;
+    const shareUrl = `${WEB_SHARE_BASE_URL}/?key=${encodeURIComponent(vaultKey)}`;
 
     try {
-      await Clipboard.setStringAsync(`${WEB_SHARE_BASE_URL}/?key=${encodeURIComponent(vaultKey)}`);
+      await Clipboard.setStringAsync(shareUrl);
       Alert.alert(
-        'Đã sao chép link!',
-        `Link chia sẻ cho Key #${vaultKey} đã được sao chép vào bộ nhớ đệm.`
+        'Đã sao chép liên kết!',
+        'Liên kết chia sẻ Kiru đã được sao chép vào bộ nhớ đệm.'
       );
     } catch (e) {
       console.error(e);
@@ -137,6 +135,14 @@ export const KeyVaultView: React.FC<KeyVaultViewProps> = ({ vaultKey, onExit }) 
 
   return (
     <View style={styles.container}>
+      {/* Clean Header */}
+      <Header
+        onRefresh={onRefresh}
+        onShareKey={handleShareKey}
+        isRefreshing={refreshing}
+      />
+
+      {/* Main Content Area */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -144,37 +150,15 @@ export const KeyVaultView: React.FC<KeyVaultViewProps> = ({ vaultKey, onExit }) 
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#FFE600']}
-            tintColor="#FFE600"
+            colors={['#4F46E5']}
+            tintColor="#4F46E5"
           />
         }
       >
-        {/* Top Vault Bar */}
-        <View style={styles.vaultTopBar}>
-          <View style={styles.keyInfo}>
-            <View style={styles.keyIconBox}>
-              <KeyRound size={16} color="#000000" strokeWidth={2.5} />
-            </View>
-            <View>
-              <Text style={styles.keyLabel}>KHO LƯU TRỮ</Text>
-              <Text style={styles.keyValue}>KEY #{vaultKey}</Text>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={styles.shareBtn}
-            onPress={handleShareKey}
-            activeOpacity={0.8}
-          >
-            <Share2 size={14} color="#000000" strokeWidth={2.5} />
-            <Text style={styles.shareBtnText}>Chia Sẻ Link</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Error Box */}
+        {/* Error Banner */}
         {Boolean(error) && (
           <View style={styles.errorBanner}>
-            <AlertCircle size={16} color="#FFFFFF" strokeWidth={2.5} />
+            <AlertCircle size={16} color="#EF4444" strokeWidth={2} />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity onPress={fetchFiles}>
               <Text style={styles.retryText}>Thử lại</Text>
@@ -212,92 +196,34 @@ export const KeyVaultView: React.FC<KeyVaultViewProps> = ({ vaultKey, onExit }) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFDF9',
+    backgroundColor: '#F8FAFC',
   },
   scrollContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 24,
     flexGrow: 1,
-  },
-  vaultTopBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: '#000000',
-    padding: 12,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
-  },
-  keyInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  keyIconBox: {
-    width: 32,
-    height: 32,
-    backgroundColor: '#FFE600',
-    borderWidth: 2,
-    borderColor: '#000000',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  keyLabel: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#666666',
-  },
-  keyValue: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#000000',
-    fontFamily: 'monospace',
-  },
-  shareBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#22D3EE',
-    borderWidth: 2,
-    borderColor: '#000000',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    gap: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
-  },
-  shareBtnText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#000000',
   },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF6B8B',
-    borderWidth: 2,
-    borderColor: '#000000',
-    padding: 10,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 12,
+    padding: 12,
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   errorText: {
     flex: 1,
-    color: '#FFFFFF',
-    fontWeight: '900',
+    color: '#991B1B',
+    fontWeight: '600',
     fontSize: 12,
   },
   retryText: {
-    color: '#FFE600',
-    fontWeight: '900',
-    textDecorationLine: 'underline',
+    color: '#4F46E5',
+    fontWeight: '700',
     fontSize: 12,
   },
 });

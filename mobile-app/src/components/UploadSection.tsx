@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { UploadCloud, Image as ImageIcon, Camera, X, CheckCircle, Film } from 'lucide-react-native';
+import { UploadCloud, Image as ImageIcon, Camera, X, CheckCircle2, Film } from 'lucide-react-native';
 import { formatBytes, isImageFile, isVideoFile } from '../lib/utils';
 import { uploadVaultFile, VaultFileItem, UploadInputItem } from '../lib/supabase';
 
@@ -83,7 +83,8 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ vaultKey, onUpload
 
   const addAssetsToStaged = (assets: ImagePicker.ImagePickerAsset[]) => {
     const newItems: StagedItem[] = assets.map((asset, index) => {
-      const rawName = asset.fileName || asset.uri.split('/').pop() || `media_${Date.now()}_${index}.jpg`;
+      const rawName =
+        asset.fileName || asset.uri.split('/').pop() || `media_${Date.now()}_${index}.jpg`;
       const isVid = asset.type === 'video' || isVideoFile(rawName);
       const isImg = asset.type === 'image' || isImageFile(rawName);
       const ext = rawName.split('.').pop()?.toLowerCase() || (isVid ? 'mp4' : 'jpg');
@@ -161,39 +162,49 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ vaultKey, onUpload
       onUploadSuccess(uploadedResults);
       setTimeout(() => {
         setStagedFiles((prev) => prev.filter((f) => f.status !== 'done'));
-      }, 1000);
+      }, 800);
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Action Picker Buttons */}
+      {/* 2 Main Action Pickers */}
       <View style={styles.pickerRow}>
         <TouchableOpacity
           style={[styles.pickerBtn, styles.galleryBtn]}
           onPress={handlePickFromGallery}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
-          <ImageIcon size={18} color="#000000" strokeWidth={2.5} />
-          <Text style={styles.pickerBtnText}>Chọn Từ Thư Viện</Text>
+          <View style={styles.galleryIconBox}>
+            <ImageIcon size={20} color="#4F46E5" strokeWidth={2.2} />
+          </View>
+          <View style={styles.pickerBtnTextWrapper}>
+            <Text style={styles.pickerBtnTitle}>Thư viện</Text>
+            <Text style={styles.pickerBtnSub}>Chọn ảnh hoặc video</Text>
+          </View>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.pickerBtn, styles.cameraBtn]}
           onPress={handleCaptureCamera}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
-          <Camera size={18} color="#000000" strokeWidth={2.5} />
-          <Text style={styles.pickerBtnText}>Chụp / Quay</Text>
+          <View style={styles.cameraIconBox}>
+            <Camera size={20} color="#0EA5E9" strokeWidth={2.2} />
+          </View>
+          <View style={styles.pickerBtnTextWrapper}>
+            <Text style={styles.pickerBtnTitle}>Máy ảnh</Text>
+            <Text style={styles.pickerBtnSub}>Chụp / Quay mới</Text>
+          </View>
         </TouchableOpacity>
       </View>
 
-      {/* Staged Items Preview */}
+      {/* Selected Items Staging Card */}
       {stagedFiles.length > 0 && (
         <View style={styles.stagedCard}>
           <View style={styles.stagedHeader}>
             <Text style={styles.stagedTitle}>
-              Đã chọn ({stagedFiles.length}):
+              Đã chọn ({stagedFiles.length})
             </Text>
             <TouchableOpacity onPress={clearAllStaged} disabled={isUploading}>
               <Text style={styles.clearAllText}>Xoá tất cả</Text>
@@ -217,13 +228,13 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ vaultKey, onUpload
 
                 {item.status === 'done' && (
                   <View style={styles.doneOverlay}>
-                    <CheckCircle size={20} color="#4ADE80" strokeWidth={3} />
+                    <CheckCircle2 size={22} color="#10B981" strokeWidth={2.5} />
                   </View>
                 )}
 
                 {item.status === 'uploading' && (
                   <View style={styles.uploadingOverlay}>
-                    <ActivityIndicator size="small" color="#FFE600" />
+                    <ActivityIndicator size="small" color="#FFFFFF" />
                   </View>
                 )}
 
@@ -233,7 +244,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ vaultKey, onUpload
                     onPress={() => removeStagedItem(item.id)}
                     activeOpacity={0.8}
                   >
-                    <X size={12} color="#FFFFFF" strokeWidth={3} />
+                    <X size={12} color="#FFFFFF" strokeWidth={2.5} />
                   </TouchableOpacity>
                 )}
 
@@ -242,35 +253,30 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ vaultKey, onUpload
                     {item.name}
                   </Text>
                   {item.size > 0 && (
-                    <Text style={styles.stagedSize}>
-                      {formatBytes(item.size)}
-                    </Text>
+                    <Text style={styles.stagedSize}>{formatBytes(item.size)}</Text>
                   )}
                 </View>
               </View>
             ))}
           </ScrollView>
 
-          {/* Start Upload Button */}
+          {/* Upload Button */}
           <TouchableOpacity
-            style={[
-              styles.uploadBtn,
-              isUploading && styles.uploadBtnDisabled,
-            ]}
+            style={[styles.uploadBtn, isUploading && styles.uploadBtnDisabled]}
             onPress={handleStartUpload}
             disabled={isUploading}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
             {isUploading ? (
               <View style={styles.btnRow}>
-                <ActivityIndicator size="small" color="#000000" />
-                <Text style={styles.uploadBtnText}>ĐANG TẢI LÊN...</Text>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+                <Text style={styles.uploadBtnText}>Đang tải lên...</Text>
               </View>
             ) : (
               <View style={styles.btnRow}>
-                <UploadCloud size={18} color="#000000" strokeWidth={2.5} />
+                <UploadCloud size={18} color="#FFFFFF" strokeWidth={2.2} />
                 <Text style={styles.uploadBtnText}>
-                  TẢI {stagedFiles.length} TỆP LÊN VAULT
+                  Tải lên {stagedFiles.length} tệp
                 </Text>
               </View>
             )}
@@ -287,85 +293,111 @@ const styles = StyleSheet.create({
   },
   pickerRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   pickerBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderWidth: 3,
-    borderColor: '#000000',
-    gap: 8,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   galleryBtn: {
-    backgroundColor: '#FFE600',
+    backgroundColor: '#FFFFFF',
   },
   cameraBtn: {
-    backgroundColor: '#22D3EE',
+    backgroundColor: '#FFFFFF',
   },
-  pickerBtnText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#000000',
+  galleryIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#F0F9FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pickerBtnTextWrapper: {
+    flex: 1,
+  },
+  pickerBtnTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  pickerBtnSub: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 1,
   },
   stagedCard: {
     marginTop: 12,
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: '#000000',
-    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 14,
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
   stagedHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   stagedTitle: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#000000',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
   },
   clearAllText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#FF6B8B',
-    textDecorationLine: 'underline',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#EF4444',
   },
   horizontalList: {
     flexDirection: 'row',
     gap: 10,
-    paddingBottom: 8,
+    paddingBottom: 6,
   },
   stagedItem: {
-    width: 90,
-    backgroundColor: '#F4F4F0',
-    borderWidth: 2,
-    borderColor: '#000000',
+    width: 88,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     overflow: 'hidden',
     position: 'relative',
   },
   stagedThumb: {
     width: '100%',
-    height: 70,
-    backgroundColor: '#222222',
+    height: 72,
+    backgroundColor: '#E2E8F0',
   },
   videoPlaceholder: {
     width: '100%',
-    height: 70,
-    backgroundColor: '#222222',
+    height: 72,
+    backgroundColor: '#1E293B',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -375,7 +407,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -385,47 +417,45 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   removeItemBtn: {
     position: 'absolute',
-    top: 3,
-    right: 3,
-    width: 18,
-    height: 18,
-    backgroundColor: '#FF6B8B',
-    borderWidth: 1,
-    borderColor: '#000000',
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stagedInfo: {
-    padding: 4,
+    padding: 6,
   },
   stagedName: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#000000',
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#0F172A',
   },
   stagedSize: {
-    fontSize: 9,
-    fontFamily: 'monospace',
-    color: '#666666',
+    fontSize: 10,
+    color: '#64748B',
+    marginTop: 1,
   },
   uploadBtn: {
-    backgroundColor: '#4ADE80',
-    borderWidth: 3,
-    borderColor: '#000000',
-    paddingVertical: 12,
+    backgroundColor: '#4F46E5',
+    borderRadius: 12,
+    paddingVertical: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    marginTop: 12,
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
     elevation: 3,
   },
   uploadBtnDisabled: {
@@ -437,9 +467,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   uploadBtnText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#000000',
-    letterSpacing: 0.5,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

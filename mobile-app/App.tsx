@@ -1,43 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Header } from './src/components/Header';
-import { KeyEntryView } from './src/components/KeyEntryView';
 import { KeyVaultView } from './src/components/KeyVaultView';
+import { DEFAULT_VAULT_KEY } from './src/constants/config';
 
 export default function App() {
-  const [activeKey, setActiveKey] = useState<string | null>(null);
-
-  const handleSelectKey = (key: string) => {
-    setActiveKey(key);
-  };
-
-  const handleExitKey = () => {
-    setActiveKey(null);
-  };
-
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
         <StatusBar style="dark" />
-
-        <Header
-          currentKey={activeKey}
-          onExitKey={handleExitKey}
-        />
-
         <View style={styles.mainContainer}>
-          {activeKey ? (
-            <KeyVaultView
-              vaultKey={activeKey}
-              onExit={handleExitKey}
-            />
-          ) : (
-            <KeyEntryView
-              onSelectKey={handleSelectKey}
-            />
-          )}
+          <KeyVaultView vaultKey={DEFAULT_VAULT_KEY} />
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -51,6 +25,6 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    backgroundColor: '#FFFDF9',
+    backgroundColor: '#F8FAFC',
   },
 });

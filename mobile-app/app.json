@@ -1,22 +1,22 @@
 {
   "expo": {
-    "name": "Kiru Vault",
+    "name": "Kiru",
     "slug": "kiru-vault",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#FFE600"
+      "backgroundColor": "#4F46E5"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kiru.vault"
+      "bundleIdentifier": "com.kiru.app"
     },
     "android": {
-      "package": "com.kiru.vault",
+      "package": "com.kiru.app",
       "adaptiveIcon": {
-        "backgroundColor": "#FFE600",
+        "backgroundColor": "#4F46E5",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"

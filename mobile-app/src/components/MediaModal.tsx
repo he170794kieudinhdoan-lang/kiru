@@ -6,7 +6,6 @@ import {
   Modal,
   TouchableOpacity,
   Image,
-  ScrollView,
   ActivityIndicator,
   Alert,
   Dimensions,
@@ -22,8 +21,6 @@ import {
   Check,
   Share2,
   Trash2,
-  Calendar,
-  HardDrive,
   Film,
   Image as ImageIcon,
 } from 'lucide-react-native';
@@ -36,7 +33,7 @@ interface MediaModalProps {
   onDelete?: (file: VaultFileItem) => Promise<void> | void;
 }
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete }) => {
   const [copied, setCopied] = useState(false);
@@ -67,12 +64,12 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
 
       if (status === 'granted') {
         await MediaLibrary.saveToLibraryAsync(uri);
-        Alert.alert('Thành công', 'Đã lưu tệp vào thư viện ảnh trên điện thoại!');
+        Alert.alert('Thành công', 'Đã lưu tệp vào thư viện ảnh trên thiết bị!');
       } else {
         if (await Sharing.isAvailableAsync()) {
           await Sharing.shareAsync(uri);
         } else {
-          Alert.alert('Đã tải xong', `Tệp đã lưu tạm tại: ${uri}`);
+          Alert.alert('Đã tải xong', `Tệp đã lưu tại: ${uri}`);
         }
       }
     } catch (err: any) {
@@ -92,7 +89,7 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
         await Sharing.shareAsync(uri);
       } else {
         handleCopyLink();
-        Alert.alert('Đã sao chép link', 'Bạn có thể dán link để gửi cho bạn bè.');
+        Alert.alert('Đã sao chép link', 'Bạn có thể gửi link cho bạn bè.');
       }
     } catch (err: any) {
       console.error(err);
@@ -103,8 +100,8 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
     if (!onDelete) return;
 
     Alert.alert(
-      'Xoá vĩnh viễn',
-      `Bạn có chắc muốn xoá tệp "${file.originalName}" khỏi máy chủ?`,
+      'Xoá tệp',
+      `Bạn có chắc muốn xoá "${file.originalName}" khỏi máy chủ?`,
       [
         { text: 'Huỷ', style: 'cancel' },
         {
@@ -140,9 +137,9 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
             <View style={styles.headerLeft}>
               <View style={styles.typeBadge}>
                 {file.isVideo ? (
-                  <Film size={14} color="#000000" strokeWidth={2.5} />
+                  <Film size={15} color="#0EA5E9" strokeWidth={2.2} />
                 ) : (
-                  <ImageIcon size={14} color="#000000" strokeWidth={2.5} />
+                  <ImageIcon size={15} color="#4F46E5" strokeWidth={2.2} />
                 )}
               </View>
               <View style={styles.nameContainer}>
@@ -155,12 +152,12 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
               </View>
             </View>
 
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.8}>
-              <X size={18} color="#000000" strokeWidth={2.5} />
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
+              <X size={16} color="#64748B" strokeWidth={2.2} />
             </TouchableOpacity>
           </View>
 
-          {/* Media Preview Body */}
+          {/* Media Preview Area */}
           <View style={styles.previewArea}>
             {file.isImage ? (
               <Image
@@ -170,10 +167,10 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
               />
             ) : (
               <View style={styles.videoNotice}>
-                <Film size={48} color="#FFE600" strokeWidth={2} />
+                <Film size={44} color="#38BDF8" strokeWidth={1.8} />
                 <Text style={styles.videoNoticeText}>Video tệp đính kèm</Text>
                 <Text style={styles.videoNoticeSub}>
-                  Bấm "Tải Về" để xem video trực tiếp trên điện thoại.
+                  Bấm "Tải về" để xem video trực tiếp trên thiết bị của bạn.
                 </Text>
               </View>
             )}
@@ -184,39 +181,39 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
             <TouchableOpacity
               style={[styles.actionBtn, styles.copyBtn]}
               onPress={handleCopyLink}
-              activeOpacity={0.8}
+              activeOpacity={0.7}
             >
               {copied ? (
-                <Check size={16} color="#000000" strokeWidth={2.5} />
+                <Check size={16} color="#10B981" strokeWidth={2.2} />
               ) : (
-                <Copy size={16} color="#000000" strokeWidth={2.5} />
+                <Copy size={16} color="#0F172A" strokeWidth={2.2} />
               )}
-              <Text style={styles.actionBtnText}>{copied ? 'ĐÃ COPY' : 'COPY LINK'}</Text>
+              <Text style={styles.actionBtnText}>{copied ? 'Đã copy' : 'Copy link'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.actionBtn, styles.downloadBtn]}
               onPress={handleSaveToDevice}
               disabled={downloading}
-              activeOpacity={0.8}
+              activeOpacity={0.7}
             >
               {downloading ? (
-                <ActivityIndicator size="small" color="#000000" />
+                <ActivityIndicator size="small" color="#4F46E5" />
               ) : (
-                <Download size={16} color="#000000" strokeWidth={2.5} />
+                <Download size={16} color="#4F46E5" strokeWidth={2.2} />
               )}
-              <Text style={styles.actionBtnText}>
-                {downloading ? 'ĐANG TẢI...' : 'TẢI VỀ MÁY'}
+              <Text style={[styles.actionBtnText, styles.downloadText]}>
+                {downloading ? 'Đang tải...' : 'Tải về máy'}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.actionBtn, styles.shareBtn]}
               onPress={handleNativeShare}
-              activeOpacity={0.8}
+              activeOpacity={0.7}
             >
-              <Share2 size={16} color="#000000" strokeWidth={2.5} />
-              <Text style={styles.actionBtnText}>CHIA SẺ</Text>
+              <Share2 size={16} color="#0F172A" strokeWidth={2.2} />
+              <Text style={styles.actionBtnText}>Chia sẻ</Text>
             </TouchableOpacity>
 
             {onDelete && (
@@ -224,15 +221,15 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
                 style={[styles.actionBtn, styles.deleteBtn]}
                 onPress={handleDelete}
                 disabled={deleting}
-                activeOpacity={0.8}
+                activeOpacity={0.7}
               >
                 {deleting ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color="#EF4444" />
                 ) : (
-                  <Trash2 size={16} color="#FFFFFF" strokeWidth={2.5} />
+                  <Trash2 size={16} color="#EF4444" strokeWidth={2.2} />
                 )}
                 <Text style={[styles.actionBtnText, styles.deleteText]}>
-                  {deleting ? '...' : 'XOÁ'}
+                  {deleting ? '...' : 'Xoá'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -246,46 +243,45 @@ export const MediaModal: React.FC<MediaModalProps> = ({ file, onClose, onDelete 
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 14,
+    padding: 16,
   },
   modalContent: {
     width: '100%',
-    maxHeight: SCREEN_HEIGHT * 0.88,
-    backgroundColor: '#18181B',
-    borderWidth: 3,
-    borderColor: '#000000',
-    shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 8,
+    maxHeight: SCREEN_HEIGHT * 0.85,
+    backgroundColor: '#0F172A',
+    borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 3,
-    borderBottomColor: '#000000',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginRight: 8,
-    gap: 8,
+    marginRight: 10,
+    gap: 10,
   },
   typeBadge: {
-    width: 28,
-    height: 28,
-    backgroundColor: '#FFE600',
-    borderWidth: 2,
-    borderColor: '#000000',
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -294,26 +290,25 @@ const styles = StyleSheet.create({
   },
   fileName: {
     fontSize: 13,
-    fontWeight: '900',
-    color: '#000000',
+    fontWeight: '700',
+    color: '#0F172A',
   },
   fileMeta: {
-    fontSize: 10,
-    color: '#666666',
-    fontFamily: 'monospace',
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 1,
   },
   closeBtn: {
-    width: 30,
-    height: 30,
-    backgroundColor: '#FF6B8B',
-    borderWidth: 2,
-    borderColor: '#000000',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
   },
   previewArea: {
-    height: SCREEN_HEIGHT * 0.48,
-    backgroundColor: '#000000',
+    height: SCREEN_HEIGHT * 0.46,
+    backgroundColor: '#090D16',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -324,27 +319,29 @@ const styles = StyleSheet.create({
   videoNotice: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: 24,
   },
   videoNoticeText: {
     fontSize: 16,
-    fontWeight: '900',
+    fontWeight: '700',
     color: '#FFFFFF',
     marginTop: 12,
   },
   videoNoticeSub: {
     fontSize: 12,
-    color: '#CCCCCC',
-    marginTop: 4,
+    color: '#94A3B8',
+    marginTop: 6,
     textAlign: 'center',
+    maxWidth: 240,
+    lineHeight: 18,
   },
   actionsBar: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 3,
-    borderTopColor: '#000000',
-    padding: 10,
-    gap: 6,
+    padding: 12,
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
   },
   actionBtn: {
     flex: 1,
@@ -352,34 +349,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    borderWidth: 2,
-    borderColor: '#000000',
-    gap: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
+    borderRadius: 10,
+    gap: 5,
+    backgroundColor: '#F8FAFC',
   },
   copyBtn: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F1F5F9',
   },
   downloadBtn: {
-    backgroundColor: '#4ADE80',
+    backgroundColor: '#EEF2FF',
   },
   shareBtn: {
-    backgroundColor: '#22D3EE',
+    backgroundColor: '#F1F5F9',
   },
   deleteBtn: {
-    backgroundColor: '#FF6B8B',
+    backgroundColor: '#FEF2F2',
     flex: 0.8,
   },
   actionBtnText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#000000',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0F172A',
+  },
+  downloadText: {
+    color: '#4F46E5',
   },
   deleteText: {
-    color: '#FFFFFF',
+    color: '#EF4444',
   },
 });

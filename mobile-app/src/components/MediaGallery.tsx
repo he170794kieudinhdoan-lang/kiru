@@ -16,7 +16,7 @@ import {
   Trash2,
   Play,
   Clock,
-  FileQuestion,
+  Inbox,
 } from 'lucide-react-native';
 import { VaultFileItem } from '../lib/supabase';
 import { formatBytes, formatRemainingTime } from '../lib/utils';
@@ -30,7 +30,7 @@ interface MediaGalleryProps {
   onDeleteAll?: () => Promise<void> | void;
 }
 
-// Isolated countdown badge: Only updates itself every second without re-rendering parent list!
+// Isolated countdown badge: Only updates itself every second without re-rendering parent list
 const CountdownBadge = memo(({ expiresAt }: { expiresAt: number }) => {
   const [text, setText] = useState(() => formatRemainingTime(expiresAt));
 
@@ -43,7 +43,8 @@ const CountdownBadge = memo(({ expiresAt }: { expiresAt: number }) => {
 
   return (
     <View style={styles.countdownBadge}>
-      <Text style={styles.countdownText}>⏱️ {text}</Text>
+      <Clock size={9} color="#F8FAFC" strokeWidth={2} />
+      <Text style={styles.countdownText}>{text}</Text>
     </View>
   );
 });
@@ -73,12 +74,12 @@ const MediaCard = memo(
 
         if (status === 'granted') {
           await MediaLibrary.saveToLibraryAsync(uri);
-          Alert.alert('Thành công', 'Đã lưu tệp vào thư viện máy!');
+          Alert.alert('Thành công', 'Đã lưu tệp vào thư viện ảnh máy!');
         } else {
           if (await Sharing.isAvailableAsync()) {
             await Sharing.shareAsync(uri);
           } else {
-            Alert.alert('Đã tải tệp', 'Tệp đã được lưu.');
+            Alert.alert('Đã tải tệp', 'Tệp đã được lưu thành công.');
           }
         }
       } catch (err: any) {
@@ -92,7 +93,7 @@ const MediaCard = memo(
     const handleDelete = () => {
       Alert.alert(
         'Xác nhận xoá',
-        `Bạn có chắc muốn xoá vĩnh viễn "${file.originalName}" khỏi máy chủ?`,
+        `Bạn có chắc muốn xoá "${file.originalName}"?`,
         [
           { text: 'Huỷ', style: 'cancel' },
           {
@@ -125,38 +126,38 @@ const MediaCard = memo(
           ) : (
             <View style={styles.videoThumbnail}>
               <View style={styles.playButton}>
-                <Play size={16} color="#000000" fill="#000000" />
+                <Play size={16} color="#FFFFFF" fill="#FFFFFF" />
               </View>
             </View>
           )}
 
-          {/* Expiry Badge */}
+          {/* Countdown Badge */}
           <View style={styles.badgeWrapper}>
             <CountdownBadge expiresAt={file.expiresAt} />
           </View>
         </TouchableOpacity>
 
-        {/* Info */}
+        {/* Card Body */}
         <View style={styles.cardBody}>
           <Text style={styles.fileTitle} numberOfLines={1}>
             {file.originalName}
           </Text>
           <Text style={styles.fileSize}>{formatBytes(file.size)}</Text>
 
-          {/* Actions */}
+          {/* Action Buttons */}
           <View style={styles.cardActions}>
             <TouchableOpacity
               style={[styles.miniBtn, styles.downloadMiniBtn]}
               onPress={handleDownload}
               disabled={downloading}
-              activeOpacity={0.8}
+              activeOpacity={0.75}
             >
               {downloading ? (
-                <ActivityIndicator size="small" color="#000000" />
+                <ActivityIndicator size="small" color="#4F46E5" />
               ) : (
                 <>
-                  <Download size={12} color="#000000" strokeWidth={2.5} />
-                  <Text style={styles.miniBtnText}>Tải Về</Text>
+                  <Download size={12} color="#4F46E5" strokeWidth={2.2} />
+                  <Text style={styles.downloadMiniText}>Tải về</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -165,14 +166,14 @@ const MediaCard = memo(
               style={[styles.miniBtn, styles.deleteMiniBtn]}
               onPress={handleDelete}
               disabled={deleting}
-              activeOpacity={0.8}
+              activeOpacity={0.75}
             >
               {deleting ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color="#EF4444" />
               ) : (
                 <>
-                  <Trash2 size={12} color="#FFFFFF" strokeWidth={2.5} />
-                  <Text style={[styles.miniBtnText, styles.deleteMiniText]}>Xoá</Text>
+                  <Trash2 size={12} color="#EF4444" strokeWidth={2.2} />
+                  <Text style={styles.deleteMiniText}>Xoá</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -195,8 +196,8 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     if (files.length === 0 || !onDeleteAll) return;
 
     Alert.alert(
-      'Xoá toàn bộ tệp',
-      `Bạn có chắc muốn xoá vĩnh viễn tất cả ${files.length} tệp trong khoá này khỏi máy chủ?`,
+      'Xoá tất cả tệp',
+      `Bạn có chắc muốn xoá toàn bộ ${files.length} tệp?`,
       [
         { text: 'Huỷ', style: 'cancel' },
         {
@@ -212,41 +213,37 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Header bar */}
+      {/* Header row */}
       <View style={styles.headerRow}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>DANH SÁCH TỆP ({files.length})</Text>
-          {files.length > 0 && onDeleteAll && (
-            <TouchableOpacity onPress={handleDeleteAll} style={styles.deleteAllBtn}>
-              <Trash2 size={12} color="#FF6B8B" strokeWidth={2.5} />
-              <Text style={styles.deleteAllText}>Xoá tất cả</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <Text style={styles.headerTitle}>
+          Tất cả tệp ({files.length})
+        </Text>
 
-        <View style={styles.timeTag}>
-          <Clock size={12} color="#444444" strokeWidth={2.5} />
-          <Text style={styles.timeTagText}>Tự xoá sau 30 phút</Text>
-        </View>
+        {files.length > 0 && onDeleteAll && (
+          <TouchableOpacity onPress={handleDeleteAll} style={styles.deleteAllBtn} activeOpacity={0.7}>
+            <Trash2 size={13} color="#EF4444" strokeWidth={2} />
+            <Text style={styles.deleteAllText}>Xoá tất cả</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Loading state */}
       {loading && files.length === 0 && (
-        <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color="#FFE600" />
+        <View style={styles.centerBox}>
+          <ActivityIndicator size="large" color="#4F46E5" />
           <Text style={styles.loadingText}>Đang tải tệp...</Text>
         </View>
       )}
 
       {/* Empty State */}
       {!loading && files.length === 0 && (
-        <View style={styles.emptyBox}>
+        <View style={styles.centerBox}>
           <View style={styles.emptyIconBox}>
-            <FileQuestion size={28} color="#000000" strokeWidth={2.5} />
+            <Inbox size={26} color="#94A3B8" strokeWidth={1.8} />
           </View>
-          <Text style={styles.emptyTitle}>CHƯA CÓ TỆP NÀO</Text>
+          <Text style={styles.emptyTitle}>Chưa có tệp nào</Text>
           <Text style={styles.emptySubtitle}>
-            Bấm chọn ảnh hoặc video ở trên để tải lên thư mục này.
+            Chọn ảnh hoặc video ở trên để tải lên và lưu trữ tạm thời.
           </Text>
         </View>
       )}
@@ -276,121 +273,95 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    marginBottom: 12,
   },
   headerTitle: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#333333',
-    letterSpacing: 0.5,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
   },
   deleteAllBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
   },
   deleteAllText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#FF6B8B',
-    textDecorationLine: 'underline',
-  },
-  timeTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F4F4F0',
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    gap: 4,
-  },
-  timeTagText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#444444',
-  },
-  loadingBox: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: '#000000',
-    padding: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
     fontSize: 12,
-    fontWeight: '900',
-    color: '#000000',
+    fontWeight: '600',
+    color: '#EF4444',
   },
-  emptyBox: {
+  centerBox: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: '#000000',
-    padding: 30,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 36,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748B',
   },
   emptyIconBox: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#FFE600',
-    borderWidth: 2,
-    borderColor: '#000000',
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
-    transform: [{ rotate: '3deg' }],
+    marginBottom: 12,
   },
   emptyTitle: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#000000',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 4,
   },
   emptySubtitle: {
-    fontSize: 12,
-    color: '#666666',
+    fontSize: 13,
+    color: '#64748B',
     textAlign: 'center',
+    lineHeight: 18,
+    maxWidth: 240,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -5,
+    marginHorizontal: -6,
   },
   gridColumn: {
     width: '50%',
-    paddingHorizontal: 5,
-    marginBottom: 10,
+    paddingHorizontal: 6,
+    marginBottom: 12,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: '#000000',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
     overflow: 'hidden',
   },
   cardImageArea: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#18181B',
-    borderBottomWidth: 2,
-    borderBottomColor: '#000000',
+    backgroundColor: '#F1F5F9',
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
@@ -402,88 +373,79 @@ const styles = StyleSheet.create({
   videoThumbnail: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#27272A',
+    backgroundColor: '#1E293B',
     justifyContent: 'center',
     alignItems: 'center',
   },
   playButton: {
-    width: 36,
-    height: 36,
-    backgroundColor: '#FFE600',
-    borderWidth: 2,
-    borderColor: '#000000',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
   },
   badgeWrapper: {
     position: 'absolute',
-    top: 5,
-    right: 5,
+    top: 6,
+    right: 6,
   },
   countdownBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    borderWidth: 1,
-    borderColor: '#FFE600',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
   },
   countdownText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: '#FFE600',
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
     fontFamily: 'monospace',
   },
   cardBody: {
-    padding: 8,
+    padding: 10,
   },
   fileTitle: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#000000',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0F172A',
     marginBottom: 2,
   },
   fileSize: {
-    fontSize: 9,
-    fontFamily: 'monospace',
-    color: '#777777',
-    marginBottom: 6,
+    fontSize: 11,
+    color: '#64748B',
+    marginBottom: 8,
   },
   cardActions: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 6,
   },
   miniBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
-    borderWidth: 1.5,
-    borderColor: '#000000',
-    gap: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 1,
+    paddingVertical: 7,
+    borderRadius: 8,
+    gap: 4,
   },
   downloadMiniBtn: {
-    backgroundColor: '#4ADE80',
+    backgroundColor: '#EEF2FF',
+  },
+  downloadMiniText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#4F46E5',
   },
   deleteMiniBtn: {
-    backgroundColor: '#FF6B8B',
-  },
-  miniBtnText: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#000000',
+    backgroundColor: '#FEF2F2',
   },
   deleteMiniText: {
-    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#EF4444',
   },
 });

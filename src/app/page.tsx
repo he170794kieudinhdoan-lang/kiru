@@ -6,13 +6,14 @@ import { Navbar } from '@/components/Navbar';
 import { KeyEntryHero } from '@/components/KeyEntryHero';
 import { KeyVaultView } from '@/components/KeyVaultView';
 import { SweetheartGallery } from '@/components/SweetheartGallery';
+import { FacebookProfileView } from '@/components/FacebookProfile/FacebookProfileView';
 import { sanitizeKey } from '@/lib/utils';
 
 function VaultApp() {
   const searchParams = useSearchParams();
 
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<'vault' | 'sweetheart'>('vault');
+  const [currentView, setCurrentView] = useState<'maihoa' | 'vault' | 'sweetheart'>('vault');
 
   useEffect(() => {
     const urlKey = searchParams.get('key');
@@ -20,12 +21,17 @@ function VaultApp() {
       const sanitized = sanitizeKey(urlKey);
       if (sanitized) {
         setActiveKey(sanitized);
+        setCurrentView('vault');
       }
     }
 
     const viewParam = searchParams.get('view');
-    if (viewParam === 'gallery' || viewParam === 'sweetheart') {
+    if (viewParam === 'gallery' || viewParam === 'sweetheart' || viewParam === 'thao' || viewParam === 'tthaosbaby') {
       setCurrentView('sweetheart');
+    } else if (viewParam === 'profile' || viewParam === 'maihoa') {
+      setCurrentView('maihoa');
+    } else if (viewParam === 'vault') {
+      setCurrentView('vault');
     }
   }, [searchParams]);
 
@@ -41,16 +47,20 @@ function VaultApp() {
 
   const handleExitKey = () => {
     setActiveKey(null);
+    setCurrentView('vault');
     const url = new URL(window.location.href);
     url.searchParams.delete('key');
+    url.searchParams.delete('view');
     window.history.pushState({}, '', url.toString());
   };
 
-  const handleToggleView = (view: 'vault' | 'sweetheart') => {
+  const handleToggleView = (view: 'maihoa' | 'vault' | 'sweetheart') => {
     setCurrentView(view);
     const url = new URL(window.location.href);
     if (view === 'sweetheart') {
-      url.searchParams.set('view', 'gallery');
+      url.searchParams.set('view', 'sweetheart');
+    } else if (view === 'maihoa') {
+      url.searchParams.set('view', 'maihoa');
     } else {
       url.searchParams.delete('view');
     }
@@ -69,7 +79,9 @@ function VaultApp() {
 
       {/* Main Workspace */}
       <main className="flex-1 flex flex-col">
-        {currentView === 'sweetheart' ? (
+        {currentView === 'maihoa' ? (
+          <FacebookProfileView onBackToHome={() => handleToggleView('vault')} />
+        ) : currentView === 'sweetheart' ? (
           <SweetheartGallery onBackToVault={() => handleToggleView('vault')} />
         ) : activeKey ? (
           <KeyVaultView
