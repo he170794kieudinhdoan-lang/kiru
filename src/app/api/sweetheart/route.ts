@@ -80,7 +80,7 @@ export async function GET() {
     const images = mediaList.filter((m) => !m.isVideo);
     const videos = mediaList.filter((m) => m.isVideo);
 
-    const avatar = '/api/sweetheart/media?file=' + encodeURIComponent('03_Cosplay_Bunny_Den/main2 (1).webp');
+    const avatar = '/api/sweetheart/media?file=' + encodeURIComponent('07_Ren_Hong_Cardigan_Trang/tthaoisbaby_0011.webp');
     const coverImage = '/api/sweetheart/media?file=' + encodeURIComponent('10_Bikini_Trang_Vay_Hoa_Ban_Cong/1750612881841.webp');
 
     const author = {

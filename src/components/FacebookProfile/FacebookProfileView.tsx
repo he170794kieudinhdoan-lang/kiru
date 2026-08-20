@@ -254,23 +254,23 @@ export const FacebookProfileView: React.FC<FacebookProfileViewProps> = ({
       {/* ======================================================== */}
       <section className="neo-box-lg bg-white overflow-hidden p-0">
         {/* Cover Photo Area */}
-        <div className="relative h-48 sm:h-72 md:h-80 w-full bg-gradient-to-r from-neo-yellow via-neo-pink to-neo-cyan border-b-4 border-black overflow-hidden group">
+        <div className="relative h-56 sm:h-72 md:h-80 w-full bg-gradient-to-r from-neo-yellow via-neo-pink to-neo-cyan border-b-4 border-black overflow-hidden group">
           <img
             src={profile.coverImage}
             alt="Cover"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {/* Subtle overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
 
           {/* Edit Cover Button (Neobrutalism badge) */}
-          <button className="absolute bottom-3 right-3 neo-btn bg-white/95 text-black px-3 py-1.5 text-xs font-black flex items-center gap-1.5 shadow-neo-sm">
+          <button className="absolute bottom-3 right-3 z-10 neo-btn bg-white/95 hover:bg-white text-black px-3 py-1.5 text-xs font-black flex items-center gap-1.5 shadow-neo-sm">
             <Camera className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Chỉnh sửa ảnh bìa</span>
           </button>
 
           {/* Top Verified Creator Badge */}
-          <div className="absolute top-3 left-3 flex items-center gap-2">
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
             <span className="neo-badge bg-black text-white text-[10px] sm:text-xs font-bold border-2 border-white">
               🔥 TRANG CÁ NHÂN CHÍNH THỨC
             </span>
@@ -282,25 +282,31 @@ export const FacebookProfileView: React.FC<FacebookProfileViewProps> = ({
 
         {/* Profile Info Bar */}
         <div className="px-4 sm:px-8 pb-5 pt-0">
-          <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-4 -mt-16 sm:-mt-20 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-4 relative z-10">
             {/* Left: Avatar & Name */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
-              {/* Profile Avatar */}
-              <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-black bg-neo-pink overflow-hidden shadow-neo-lg group shrink-0">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-5 text-center sm:text-left">
+              {/* Profile Avatar (Negative margin ONLY on the avatar) */}
+              <div className="-mt-16 sm:-mt-20 md:-mt-24 relative w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-black bg-white overflow-hidden shadow-neo-lg group shrink-0 ring-4 ring-white">
                 <img
                   src={profile.avatar}
                   alt={profile.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
                 />
-                <button className="absolute bottom-1 right-1 p-2 rounded-full bg-neo-yellow border-2 border-black text-black shadow-neo-sm hover:scale-110 transition-transform">
+                <button
+                  className="absolute bottom-1 right-1 p-2 rounded-full bg-neo-yellow border-2 border-black text-black shadow-neo-sm hover:scale-110 transition-transform"
+                  title="Đổi ảnh đại diện"
+                >
                   <Camera className="w-4 h-4" />
                 </button>
                 {/* Online Status Dot */}
-                <div className="absolute bottom-3 left-3 w-4 h-4 rounded-full bg-neo-lime border-2 border-black" />
+                <div
+                  className="absolute bottom-2 left-2 w-4 h-4 rounded-full bg-neo-lime border-2 border-black"
+                  title="Đang hoạt động"
+                />
               </div>
 
               {/* Names & Follower Stats */}
-              <div className="space-y-1 sm:pb-2">
+              <div className="space-y-1.5 pt-2 sm:pt-4 sm:pb-2">
                 <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-kiru text-black tracking-tight">
                     {profile.name}
@@ -308,7 +314,7 @@ export const FacebookProfileView: React.FC<FacebookProfileViewProps> = ({
                   <span title="Tài khoản đã xác minh">
                     <CheckCircle2 className="w-6 h-6 text-blue-600 fill-blue-100" />
                   </span>
-                  <span className="neo-badge bg-neo-pink text-white text-[10px] font-bold">
+                  <span className="neo-badge bg-neo-pink text-white text-[10px] sm:text-xs font-bold">
                     {profile.badge}
                   </span>
                 </div>
@@ -318,7 +324,7 @@ export const FacebookProfileView: React.FC<FacebookProfileViewProps> = ({
                 </p>
 
                 {/* Friend Avatar Stack */}
-                <div className="flex items-center justify-center sm:justify-start -space-x-2 pt-1">
+                <div className="flex items-center justify-center sm:justify-start -space-x-2 pt-0.5">
                   {profile.featuredPhotos.slice(0, 5).map((img, i) => (
                     <div
                       key={img.id}
@@ -335,7 +341,7 @@ export const FacebookProfileView: React.FC<FacebookProfileViewProps> = ({
             </div>
 
             {/* Right: Facebook Action Buttons */}
-            <div className="flex items-center gap-2 flex-wrap justify-center sm:pb-2 w-full lg:w-auto">
+            <div className="flex items-center gap-2 flex-wrap justify-center pt-2 sm:pt-4 sm:pb-2 w-full lg:w-auto">
               <button
                 onClick={() => {
                   setIsFollowing((prev) => !prev);
