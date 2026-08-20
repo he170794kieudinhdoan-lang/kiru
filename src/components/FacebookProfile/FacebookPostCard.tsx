@@ -13,9 +13,8 @@ import {
   Send,
   Sparkles,
   CheckCircle2,
-  Smile,
-  Bookmark,
-  Maximize2
+  Maximize2,
+  Tag,
 } from 'lucide-react';
 import { FacebookPost, FacebookComment, MaiHoaMediaItem } from '@/types/maihoa';
 
@@ -93,13 +92,20 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
 
   const activeReactionObj = REACTIONS.find((r) => r.type === currentReaction);
 
+  // Clean category tag
+  const categoryTitle = post.category
+    ? post.category.includes('_')
+      ? post.category.split('_').slice(1).join(' ')
+      : post.category
+    : null;
+
   return (
-    <article className="neo-box bg-white overflow-hidden space-y-3 transition-shadow duration-150">
+    <article className="neo-box bg-white overflow-hidden space-y-3 transition-shadow duration-150 shadow-neo-sm hover:shadow-neo">
       {/* Pinned Badge if applicable */}
       {post.pinned && (
-        <div className="bg-neo-yellow border-b-2 border-black px-4 py-1 flex items-center justify-between text-xs font-black">
+        <div className="bg-neo-yellow border-b-2 border-black px-4 py-1.5 flex items-center justify-between text-xs font-black">
           <span className="flex items-center gap-1.5 font-kiru">
-            <Sparkles className="w-3.5 h-3.5 fill-current" /> BÀI VIẾT ĐƯỢC GHIM
+            <Sparkles className="w-3.5 h-3.5 fill-current text-neo-pink" /> BÀI VIẾT NỔI BẬT ĐƯỢC GHIM
           </span>
           <span className="neo-badge bg-black text-white text-[10px] py-0 px-1.5">MỚI NHẤT</span>
         </div>
@@ -108,12 +114,12 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
       {/* Post Header */}
       <div className="px-4 pt-4 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          {/* Author Avatar with Neobrutalism Border */}
-          <div className="relative w-11 h-11 rounded-full border-2 border-black overflow-hidden bg-neo-pink shrink-0 shadow-neo-sm">
+          {/* Author Avatar with Neobrutalism Ring */}
+          <div className="relative w-11 h-11 rounded-full border-2 border-black overflow-hidden bg-white shrink-0 shadow-neo-sm ring-2 ring-yellow-300">
             <img
               src={post.author.avatar}
               alt={post.author.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center"
             />
           </div>
 
@@ -126,13 +132,13 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
                 <CheckCircle2 className="w-4 h-4 text-blue-600 fill-blue-100" />
               )}
               {post.feeling && (
-                <span className="text-xs text-zinc-600 font-medium">
+                <span className="text-xs bg-zinc-100 text-zinc-800 font-medium px-2 py-0.5 rounded-full border border-black/20">
                   {post.feeling}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] text-zinc-500 font-mono">
+            <div className="flex items-center gap-2 text-[11px] text-zinc-500 font-mono flex-wrap pt-0.5">
               <span>{post.createdAt}</span>
               <span>•</span>
               {post.location && (
@@ -142,6 +148,11 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
                 </>
               )}
               <Globe className="w-3 h-3 text-zinc-400" />
+              {categoryTitle && (
+                <span className="neo-badge bg-neo-yellow/80 text-black text-[9px] font-bold py-0 px-1.5 border border-black">
+                  📁 {categoryTitle}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -160,7 +171,7 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
+                className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 transition-colors"
               >
                 {tag}
               </span>
@@ -169,10 +180,12 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
         )}
       </div>
 
-      {/* Post Media Display */}
+      {/* Post Media Display: Up to 6 Photos Grid */}
       {post.media && post.media.length > 0 && (
         <div className="border-y-2 border-black bg-zinc-950 overflow-hidden relative">
-          {/* Single Video Layout */}
+          {/* =================================================== */}
+          {/* 1 MEDIA: Single Video */}
+          {/* =================================================== */}
           {post.media.length === 1 && post.media[0].isVideo && (
             <div className="relative w-full max-h-[580px] bg-black flex items-center justify-center group">
               <video
@@ -232,13 +245,15 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
                   VIDEO HD
                 </span>
                 <span className="neo-badge bg-black text-white text-[10px] font-mono border border-black">
-                  {post.media[0].duration}s
+                  {post.media[0].duration || 15}s
                 </span>
               </div>
             </div>
           )}
 
-          {/* Single Image Layout */}
+          {/* =================================================== */}
+          {/* 1 MEDIA: Single Image */}
+          {/* =================================================== */}
           {post.media.length === 1 && !post.media[0].isVideo && (
             <div
               onClick={() => onOpenMedia(post.media[0], post)}
@@ -249,43 +264,229 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
                 alt={post.caption}
                 className="w-full max-h-[580px] object-contain group-hover:scale-[1.02] transition-transform duration-300"
               />
-              <div className="absolute bottom-3 right-3 p-1.5 bg-black/70 border border-white text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-3 right-3 p-1.5 bg-black/70 border border-white text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-neo-sm">
                 <Maximize2 className="w-4 h-4" />
               </div>
             </div>
           )}
 
-          {/* Multi-Photo Layout (2, 3, 4+ Grid) */}
-          {post.media.length > 1 && (
-            <div
-              className={`grid gap-1 bg-black p-0.5 ${
-                post.media.length === 2
-                  ? 'grid-cols-2 aspect-[4/3]'
-                  : post.media.length === 3
-                  ? 'grid-cols-3 aspect-[16/9]'
-                  : 'grid-cols-2 sm:grid-cols-3 aspect-[4/3]'
-              }`}
-            >
-              {post.media.slice(0, 4).map((item, idx) => {
-                const isExtra = idx === 3 && post.media.length > 4;
-                const remaining = post.media.length - 4;
+          {/* =================================================== */}
+          {/* 2 PHOTOS: 2 Equal Columns */}
+          {/* =================================================== */}
+          {post.media.length === 2 && (
+            <div className="grid grid-cols-2 gap-1.5 bg-black p-1 aspect-[4/3]">
+              {post.media.map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => onOpenMedia(item, post)}
+                  className="relative h-full overflow-hidden cursor-pointer group bg-zinc-900"
+                >
+                  <img
+                    src={item.thumbUrl || item.url}
+                    alt={`Photo ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-10 h-10 rounded-full bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+                        <Play className="w-5 h-5 text-black fill-current translate-x-0.5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* =================================================== */}
+          {/* 3 PHOTOS: 1 Big Left (2 rows) + 2 Stacked Right */}
+          {/* =================================================== */}
+          {post.media.length === 3 && (
+            <div className="grid grid-cols-3 grid-rows-2 gap-1.5 bg-black p-1 aspect-[4/3]">
+              {/* Left Big Item */}
+              <div
+                onClick={() => onOpenMedia(post.media[0], post)}
+                className="col-span-2 row-span-2 relative overflow-hidden cursor-pointer group bg-zinc-900"
+              >
+                <img
+                  src={post.media[0].thumbUrl || post.media[0].url}
+                  alt="Photo 1"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                {post.media[0].isVideo && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-10 h-10 rounded-full bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+                      <Play className="w-5 h-5 text-black fill-current translate-x-0.5" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Stacked 2 Items */}
+              {post.media.slice(1, 3).map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => onOpenMedia(item, post)}
+                  className="col-span-1 row-span-1 relative overflow-hidden cursor-pointer group bg-zinc-900"
+                >
+                  <img
+                    src={item.thumbUrl || item.url}
+                    alt={`Photo ${idx + 2}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-8 h-8 rounded-full bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+                        <Play className="w-4 h-4 text-black fill-current translate-x-0.5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* =================================================== */}
+          {/* 4 PHOTOS: 2x2 Square Grid */}
+          {/* =================================================== */}
+          {post.media.length === 4 && (
+            <div className="grid grid-cols-2 gap-1.5 bg-black p-1 aspect-[4/3]">
+              {post.media.map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => onOpenMedia(item, post)}
+                  className="relative aspect-square overflow-hidden cursor-pointer group bg-zinc-900"
+                >
+                  <img
+                    src={item.thumbUrl || item.url}
+                    alt={`Photo ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-8 h-8 rounded-full bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+                        <Play className="w-4 h-4 text-black fill-current translate-x-0.5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* =================================================== */}
+          {/* 5 PHOTOS: 2 Top (half-width) + 3 Bottom (third-width) */}
+          {/* =================================================== */}
+          {post.media.length === 5 && (
+            <div className="grid grid-cols-6 gap-1.5 bg-black p-1 aspect-[4/3]">
+              {/* Top 2 Items */}
+              {post.media.slice(0, 2).map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => onOpenMedia(item, post)}
+                  className="col-span-3 relative aspect-[4/3] overflow-hidden cursor-pointer group bg-zinc-900"
+                >
+                  <img
+                    src={item.thumbUrl || item.url}
+                    alt={`Photo ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-8 h-8 rounded-full bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+                        <Play className="w-4 h-4 text-black fill-current translate-x-0.5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Bottom 3 Items */}
+              {post.media.slice(2, 5).map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => onOpenMedia(item, post)}
+                  className="col-span-2 relative aspect-square overflow-hidden cursor-pointer group bg-zinc-900"
+                >
+                  <img
+                    src={item.thumbUrl || item.url}
+                    alt={`Photo ${idx + 3}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-7 h-7 rounded-full bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+                        <Play className="w-3.5 h-3.5 text-black fill-current translate-x-0.5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* =================================================== */}
+          {/* 6+ PHOTOS: 2 Top + 4 Bottom (Max 6 Photos Displayed) */}
+          {/* =================================================== */}
+          {post.media.length >= 6 && (
+            <div className="grid grid-cols-12 gap-1.5 bg-black p-1 aspect-[4/3]">
+              {/* Top 2 Items (Col span 6 each) */}
+              {post.media.slice(0, 2).map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => onOpenMedia(item, post)}
+                  className="col-span-6 relative aspect-[16/10] overflow-hidden cursor-pointer group bg-zinc-900"
+                >
+                  <img
+                    src={item.thumbUrl || item.url}
+                    alt={`Photo ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-8 h-8 rounded-full bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+                        <Play className="w-4 h-4 text-black fill-current translate-x-0.5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Bottom 4 Items (Col span 3 each) */}
+              {post.media.slice(2, 6).map((item, idx) => {
+                const isSixth = idx === 3;
+                const remaining = post.media.length - 6;
 
                 return (
                   <div
                     key={item.id}
                     onClick={() => onOpenMedia(item, post)}
-                    className="relative aspect-square overflow-hidden cursor-pointer group bg-zinc-900"
+                    className="col-span-3 relative aspect-square overflow-hidden cursor-pointer group bg-zinc-900"
                   >
                     <img
                       src={item.thumbUrl || item.url}
-                      alt={`Photo ${idx + 1}`}
+                      alt={`Photo ${idx + 3}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
 
-                    {/* Extra Photos Counter Overlay */}
-                    {isExtra && (
-                      <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white">
-                        <span className="text-2xl font-black font-kiru">+{remaining}</span>
+                    {/* Video badge if applicable */}
+                    {item.isVideo && !isSixth && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-7 h-7 rounded-full bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+                          <Play className="w-3.5 h-3.5 text-black fill-current translate-x-0.5" />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* +N Extra Photos Counter on the 6th photo */}
+                    {isSixth && remaining > 0 && (
+                      <div className="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center text-white select-none">
+                        <span className="text-xl sm:text-2xl font-black font-kiru tracking-wider">
+                          +{remaining}
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-yellow-300">
+                          xem thêm
+                        </span>
                       </div>
                     )}
                   </div>
@@ -297,7 +498,7 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
       )}
 
       {/* Reactions Count & Summary */}
-      <div className="px-4 py-1 flex items-center justify-between text-xs font-mono text-zinc-600 border-b border-zinc-200">
+      <div className="px-4 py-1.5 flex items-center justify-between text-xs font-mono text-zinc-600 border-b border-zinc-200">
         <div className="flex items-center gap-1.5">
           <span className="flex -space-x-1">
             <span className="w-5 h-5 rounded-full bg-blue-600 border border-white flex items-center justify-center text-[10px] text-white">
@@ -316,7 +517,7 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowComments((prev) => !prev)}
-            className="hover:underline"
+            className="hover:underline font-bold"
           >
             {comments.length} bình luận
           </button>
@@ -418,18 +619,18 @@ export const FacebookPostCard: React.FC<FacebookPostCardProps> = ({
           <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
             {comments.map((cmt) => (
               <div key={cmt.id} className="flex items-start gap-2 text-xs">
-                <div className="w-7 h-7 rounded-full border border-black overflow-hidden bg-zinc-200 shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded-full border border-black overflow-hidden bg-zinc-200 shrink-0 mt-0.5 ring-1 ring-black/30">
                   <img src={cmt.avatar} alt={cmt.author} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1">
-                  <div className="bg-white border border-black rounded-2xl px-3 py-2 shadow-neo-sm inline-block max-w-[95%]">
+                  <div className="bg-white border border-black rounded-2xl px-3.5 py-2 shadow-neo-sm inline-block max-w-[95%]">
                     <div className="flex items-center gap-1">
                       <span className="font-black text-black font-kiru">{cmt.author}</span>
                       {cmt.isVerified && (
                         <CheckCircle2 className="w-3 h-3 text-blue-600 fill-blue-100" />
                       )}
                     </div>
-                    <p className="text-zinc-800 font-medium mt-0.5">{cmt.content}</p>
+                    <p className="text-zinc-800 font-medium mt-0.5 leading-relaxed">{cmt.content}</p>
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-zinc-500 font-mono ml-2 mt-1">
                     <button className="font-bold hover:underline">Thích</button>
