@@ -5,8 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { KeyEntryHero } from '@/components/KeyEntryHero';
 import { KeyVaultView } from '@/components/KeyVaultView';
-import { SweetheartGallery } from '@/components/SweetheartGallery';
 import { FacebookProfileView } from '@/components/FacebookProfile/FacebookProfileView';
+import { SweetheartProfileView } from '@/components/SweetheartProfile/SweetheartProfileView';
 import { sanitizeKey } from '@/lib/utils';
 
 function VaultApp() {
@@ -82,7 +82,7 @@ function VaultApp() {
         {currentView === 'maihoa' ? (
           <FacebookProfileView onBackToHome={() => handleToggleView('vault')} />
         ) : currentView === 'sweetheart' ? (
-          <SweetheartGallery onBackToVault={() => handleToggleView('vault')} />
+          <SweetheartProfileView onBackToHome={() => handleToggleView('vault')} />
         ) : activeKey ? (
           <KeyVaultView
             vaultKey={activeKey}

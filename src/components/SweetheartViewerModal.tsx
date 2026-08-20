@@ -219,7 +219,7 @@ export const SweetheartViewerModal: React.FC<SweetheartViewerModalProps> = ({
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      a.download = currentItem.name;
+      a.download = currentItem.name || currentItem.filename || 'media';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(blobUrl);

@@ -258,7 +258,7 @@ export const SweetheartGallery: React.FC<SweetheartGalleryProps> = ({ onBackToVa
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
         (item) =>
-          item.name.toLowerCase().includes(q) ||
+          (item.name || item.filename || '').toLowerCase().includes(q) ||
           item.folderTitle.toLowerCase().includes(q) ||
           item.relPath.toLowerCase().includes(q)
       );

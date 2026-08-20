@@ -1,6 +1,10 @@
 export interface MaiHoaMediaItem {
   id: string;
   filename: string;
+  name?: string;
+  relPath?: string;
+  folder?: string;
+  folderTitle?: string;
   isVideo: boolean;
   ext: string;
   size: number;
@@ -54,6 +58,7 @@ export interface FacebookPost {
   comments: FacebookComment[];
   tags?: string[];
   pinned?: boolean;
+  category?: string;
 }
 
 export interface FacebookStory {
